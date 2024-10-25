@@ -87,10 +87,6 @@ END {
 # Replace the original file with our updated version
 mv "$temp_file" "$PROMETHEUS_CONFIG_PATH"
 
-# Fix permissions
-chmod 644 "$PROMETHEUS_CONFIG_PATH"
-chown 65534:65534 "$PROMETHEUS_CONFIG_PATH" 2>/dev/null || true
-
 # Check if docker compose exists in the current directory
 if [ -f "docker-compose.yml" ] || [ -f "compose.yml" ]; then
     echo "Restarting containers..."
