@@ -20,7 +20,6 @@ fi
 
 # Extract the Prometheus config path
 PROMETHEUS_CONFIG_PATH=$(grep PROMETHEUS_CONFIG_FILE_HOST .env | cut -d '=' -f2)
-
 if [ -z "$PROMETHEUS_CONFIG_PATH" ]; then
     echo "Could not find PROMETHEUS_CONFIG_FILE_HOST in .env file"
     exit 1
@@ -50,7 +49,7 @@ backup_file="${PROMETHEUS_CONFIG_PATH}.backup.$(date +%Y%m%d_%H%M%S)"
 cp "$PROMETHEUS_CONFIG_PATH" "$backup_file"
 echo "Created backup at $backup_file"
 
-# Create a temporary file
+# Create a temporary file with a unique name
 temp_file=$(mktemp)
 
 # Process the file
@@ -84,10 +83,17 @@ END {
     }
 }' "$PROMETHEUS_CONFIG_PATH" > "$temp_file"
 
-# Replace the original file with our updated version
-mv "$temp_file" "$PROMETHEUS_CONFIG_PATH"
+# Ensure the original file exists and is a regular file
+if [ -f "$PROMETHEUS_CONFIG_PATH" ]; then
+    # Remove the original file first
+    rm -f "$PROMETHEUS_CONFIG_PATH"
+fi
 
-# Permission isssues fix
+# Copy the temporary file to the destination and set permissions
+cp "$temp_file" "$PROMETHEUS_CONFIG_PATH"
+rm -f "$temp_file"
+
+# Set proper permissions
 chmod 644 "$PROMETHEUS_CONFIG_PATH"
 chown 65534:65534 "$PROMETHEUS_CONFIG_PATH" 2>/dev/null || true
 
